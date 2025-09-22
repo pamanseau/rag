@@ -2,6 +2,7 @@ apiVersion: apps.nvidia.com/v1alpha1
 kind: NIMService
 metadata:
   name: nim-llm
+  namespace: nemo
 spec:
   image:
     repository: nvcr.io/nim/nvidia/llama-3_3-nemotron-super-49b-v1_5
@@ -30,6 +31,7 @@ apiVersion: apps.nvidia.com/v1alpha1
 kind: NIMService
 metadata:
   name: nemoretriever-page-elements-v2
+  namespace: nemo
 spec:
   image:
     repository: nvcr.io/nim/nvidia/nemoretriever-page-elements-v2
@@ -57,6 +59,7 @@ apiVersion: apps.nvidia.com/v1alpha1
 kind: NIMService
 metadata:
   name: nemoretriever-graphic-elements-v1
+  namespace: nemo
 spec:
   image:
     repository: nvcr.io/nim/nvidia/nemoretriever-graphic-elements-v1
@@ -84,6 +87,7 @@ apiVersion: apps.nvidia.com/v1alpha1
 kind: NIMService
 metadata:
   name: nemoretriever-table-structure-v1
+  namespace: nemo
 spec:
   image:
     repository: nvcr.io/nim/nvidia/nemoretriever-table-structure-v1
@@ -111,6 +115,7 @@ apiVersion: apps.nvidia.com/v1alpha1
 kind: NIMService
 metadata:
   name: nemo-retriever-embedding-ms
+  namespace: nemo
 spec:
   image:
     repository: nvcr.io/nim/nvidia/llama-3.2-nv-embedqa-1b-v2
@@ -137,6 +142,7 @@ apiVersion: apps.nvidia.com/v1alpha1
 kind: NIMService
 metadata:
   name: nemo-retriever-reranking-ms
+  namespace: nemo
 spec:
   image:
     repository: nvcr.io/nim/nvidia/llama-3.2-nv-rerankqa-1b-v2
