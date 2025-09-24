@@ -26,13 +26,13 @@ imagePullSecret:
   name: "ngc-secret"
   registry: "nvcr.io"
   username: "$oauthtoken"
-  password: ""
+  password: "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"
   create: true
 
 # -- Secret containing API keys for NVIDIA NGC model registry
 ngcApiSecret:
   name: "ngc-api"
-  password: ""
+  password: "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"
   create: true
 
 # -- RAG server container image
@@ -146,7 +146,8 @@ envVars:
   APP_VLM_MAX_QUERY_IMAGES: "1"
   # Max number of context images to include in VLM input
   APP_VLM_MAX_CONTEXT_IMAGES: "1"
-  APP_VLM_SERVERURL: "http://nemotron-nano-vl-8b-v1.nemo:8000/v1"
+  # TODO: Start with Helm chart in Neno namespace
+  APP_VLM_SERVERURL: "http://nim-vlm.nemo:8000/v1"
   APP_VLM_MODELNAME: "nvidia/llama-3.1-nemotron-nano-vl-8b-v1"
 
   # === Text Splitter ===
@@ -583,8 +584,8 @@ nv-ingest:
   ngcImagePullSecret:
     create: false
   image:
-    repository: "nvcr.io/nvidia/nemo-microservices/nv-ingest"
-    tag: "25.6.2"
+    repository: nvcr.io/nvidia/nemo-microservices/nv-ingest
+    tag: "25.9.0"
   resources:
     limits:
       nvidia.com/gpu: 0
@@ -602,7 +603,7 @@ nv-ingest:
     MESSAGE_CLIENT_PORT: 6379
     MESSAGE_CLIENT_TYPE: "redis"
     MINIO_INTERNAL_ADDRESS: "rag-minio:9000"
-    MINIO_PUBLIC_ADDRESS: "http://localhost:9000"
+    MINIO_PUBLIC_ADDRESS: "http://rag-minio:9000"
     MINIO_BUCKET: "nv-ingest"
     MILVUS_ENDPOINT: "http://milvus:19530"
     OTEL_EXPORTER_OTLP_ENDPOINT: "otel-collector:4317"
@@ -637,7 +638,7 @@ nv-ingest:
   # WAR to fix -loadbalancer from the ingestion NIMs URLs
   # Replaced OCR with Nemo Retriever OCR by pamanseau
   OCR_GRPC_ENDPOINT: nemoretriever-ocr:8001
-  OCR_HTTP_ENDPOINT: http://nemoretriever-ocr.nemo:8000/v1/infer
+  OCR_HTTP_ENDPOINT: http://nemoretriever-ocr-v1.nemo:8000/v1/infer
   OCR_INFER_PROTOCOL: grpc
   OCR_MODEL_NAME: scene_text  
   YOLOX_GRPC_ENDPOINT: nemoretriever-page-elements-v2.nemo:8001
