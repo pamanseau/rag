@@ -5,7 +5,7 @@ import { FileCard } from '../FileCard';
 // Mock the store
 const mockStore = {
   metadataSchema: [] as Array<{ name: string; type: string }>,
-  fileMetadata: {} as Record<string, Record<string, string>>,
+  fileMetadata: {} as Record<string, Record<string, unknown>>,
   removeFile: vi.fn(),
   updateMetadataField: vi.fn()
 };
@@ -16,7 +16,7 @@ vi.mock('../../../store/useNewCollectionStore', () => ({
 
 // Mock MetadataField component
 vi.mock('../MetadataField', () => ({
-  MetadataField: ({ fileName, field }: any) => (
+  MetadataField: ({ fileName, field }: { fileName: string; field: { name: string; type: string } }) => (
     <div data-testid="metadata-field">
       {fileName} - {field.name} ({field.type})
     </div>
@@ -39,7 +39,7 @@ describe('FileCard', () => {
 
     it('displays remove button', () => {
       render(<FileCard file={mockFile} index={0} />);
-      expect(screen.getByText('Remove')).toBeInTheDocument();
+      expect(screen.getByText('REMOVE')).toBeInTheDocument();
     });
   });
 
@@ -47,6 +47,10 @@ describe('FileCard', () => {
     it('calls removeFile when remove button clicked', () => {
       render(<FileCard file={mockFile} index={2} />);
       
+      // Click REMOVE button to open modal
+      fireEvent.click(screen.getByText('REMOVE'));
+      
+      // Click confirm button in modal
       fireEvent.click(screen.getByText('Remove'));
       
       expect(mockStore.removeFile).toHaveBeenCalledWith(2);
@@ -56,6 +60,10 @@ describe('FileCard', () => {
       const anotherFile = new File(['content'], 'another.doc');
       render(<FileCard file={anotherFile} index={5} />);
       
+      // Click REMOVE button to open modal
+      fireEvent.click(screen.getByText('REMOVE'));
+      
+      // Click confirm button in modal
       fireEvent.click(screen.getByText('Remove'));
       
       expect(mockStore.removeFile).toHaveBeenCalledWith(5);

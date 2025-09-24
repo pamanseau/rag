@@ -19,6 +19,7 @@ import { useDragAndDrop } from "../../hooks/useDragAndDrop";
 interface FileUploadZoneProps {
   acceptedTypes: string[];
   maxFileSize: number;
+  audioFileMaxSize?: number;
   onFilesSelected: (files: FileList) => void;
 }
 
@@ -31,6 +32,7 @@ const UploadIcon = () => (
 export const FileUploadZone = ({ 
   acceptedTypes, 
   maxFileSize, 
+  audioFileMaxSize,
   onFilesSelected 
 }: FileUploadZoneProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -77,7 +79,10 @@ export const FileUploadZone = ({
           {' '}or drag and drop them here.
         </p>
         <p className="text-sm text-gray-400">
-          Accepted: {acceptedTypes.join(', ')} • Up to {maxFileSize} MB
+          Accepted: {acceptedTypes.join(', ')} • Up to {maxFileSize} MB • Max 100 files per batch
+          {audioFileMaxSize && audioFileMaxSize !== maxFileSize && (
+            <span> • Audio files (.mp3, .wav): up to {audioFileMaxSize} MB</span>
+          )}
         </p>
       </div>
 

@@ -74,7 +74,7 @@ You use sample Jupyter notebooks with the JupyterLab service to interact with th
 The Blueprint contains sample data from the [NVIDIA Developer Blog](https://github.com/NVIDIA-AI-Blueprints/rag/blob/main/data/dataset.zip) and also some [sample multimodal data](./data/multimodal/).
 You can build on this blueprint by customizing the RAG application to your specific use case.
 
-We also provide a sample user interface named `rag-playground`.
+We also provide a sample user interface named `rag-frontend`.
 
 
 ### Technical Diagram
@@ -86,8 +86,8 @@ We also provide a sample user interface named `rag-playground`.
 
 The image represents the architecture and workflow. Here's a step-by-step explanation of the workflow from end-user perspective:
 
-1. **User Interaction via RAG Playground or APIs**:
-   - The user interacts with this blueprint by typing queries into the sample UI microservice named as **RAG Playground**. These queries are sent to the system through the `POST /generate` API exposed by the RAG server microservice. There are separate [notebooks](./notebooks/) available which showcase API usage as well.
+1. **User Interaction via rag frontend or APIs**:
+   - The user interacts with this blueprint by typing queries into the sample UI microservice named as **rag frontend**. These queries are sent to the system through the `POST /generate` API exposed by the RAG server microservice. There are separate [notebooks](./notebooks/) available which showcase API usage as well.
 
 2. **Query Processing**:
    - The query enters the **RAG Server**, which is based on LangChain. An optional **Query Rewriter** component may refine or decontextualize the query for better retrieval results at this stage. An optional NeMoGuardrails component can be enabled as well to help filter out queries at input of the pipeline.
@@ -102,7 +102,7 @@ The image represents the architecture and workflow. Here's a step-by-step explan
    - The top N chunks are injected in the prompt and sent to the **Response Generation** module, which leverages **NeMo LLM inference Microservice** to generate a natural language response based on the retrieved information. Optionally, a reflection module can be enabled which makes additional LLM calls to improve the response by verifying its groundness based on retrieved context at this stage. NeMo guardrails can also be enabled at this stage to guardrail the output against toxicity.
 
 6. **Delivery of Response**:
-   - The generated response is sent back to the **RAG Playground**, where the user can view the answer to their query as well as check the output of the retriever module using the `Citations` option.
+   - The generated response is sent back to the **rag frontend**, where the user can view the answer to their query as well as check the output of the retriever module using the `Citations` option.
 
 7. **Ingestion of Data**:
    - Separately, unstructured data is ingested into the system via the `POST /documents` API using the **Ingestor server microservice**. This data is preprocessed, split into chunks and stored in the **Milvus Vector Database** using **Nvingest microservice** which is called from the ingestor microservice.
@@ -156,6 +156,7 @@ The following are some of the features that you can enable:
 - [Enable PDF extraction with Nemoretriever Parse](docs/nemoretriever-parse-extraction.md)
 - [Enable NeMo Retriever OCR for enhanced text extraction](docs/nemoretriever-ocr.md)
 - [Enable standalone NV-Ingest for direct document ingestion without ingestor server](docs/nv-ingest-standalone.md)
+- [Mount ingestor server volume for direct filesystem access to extraction results](docs/mount-ingestor-volume.md)
 - [Enable query rewriting to improve the accuracy of multi-turn conversations](docs/query_rewriter.md)
 - [Enable reasoning in Nemotron model](docs/enable-nemotron-thinking.md)
 - [Enable self-reflection to improve accuracy](docs/self-reflection.md)
@@ -174,8 +175,6 @@ To troubleshoot issues that arise when you work with the NVIDIA RAG Blueprint, s
 > **⚠️ Important B200 Limitation Notice:**
 >
 > B200 GPUs are **not supported** for the following advanced features:
-> - Self-Reflection to improve accuracy
-> - Query rewriting to Improve accuracy of Multi-Turn Conversations
 > - Image captioning support for ingested documents
 > - NeMo Guardrails for guardrails at input/output
 > - VLM based inferencing in RAG

@@ -34,7 +34,10 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
+from prometheus_client import REGISTRY, CollectorRegistry, generate_latest
+from prometheus_client.multiprocess import MultiProcessCollector
 from pydantic import BaseModel, Field, constr, model_validator
+from starlette.responses import Response
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from nvidia_rag.rag_server.health import print_health_report
@@ -561,6 +564,24 @@ async def health_check(check_dependencies: bool = False):
     return response
 
 
+@app.get("/metrics")
+def metrics_endpoint():
+    """Exposes aggregated metrics for Multi-worker setup across all workers."""
+    try:
+        # Create a new registry to collect metrics from all workers
+        registry = CollectorRegistry()
+        # Use multi-process collector to aggregate metrics from all workers
+        MultiProcessCollector(registry)
+        metrics_data = generate_latest(registry)
+        logger.debug(f"Generated {len(metrics_data)} bytes of aggregated metrics data")
+        return Response(content=metrics_data, media_type="text/plain")
+    except Exception as e:
+        logger.error(f"Error generating metrics: {e}")
+        return Response(
+            content=f"# Error generating metrics: {e}\n", media_type="text/plain"
+        )
+
+
 @app.post(
     "/generate",
     tags=["RAG APIs"],
@@ -843,6 +864,17 @@ async def document_search(
     tags=["Retrieval APIs"],
     response_model=SummaryResponse,
     responses={
+        400: {
+            "description": "Bad request (invalid timeout value)",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "message": "Invalid timeout value. Timeout must be a non-negative integer.",
+                        "error": "Provided timeout value: -1",
+                    }
+                }
+            },
+        },
         404: {
             "description": "Summary not found (non-blocking mode)",
             "content": {
@@ -891,7 +923,7 @@ async def get_summary(
     collection_name: str,
     file_name: str,
     blocking: bool = False,
-    timeout: int = 300,
+    timeout: float = 300,
 ) -> JSONResponse:
     """
     Retrieve document summary from the collection.
@@ -904,7 +936,7 @@ async def get_summary(
         collection_name (str): Name of the document collection
         file_name (str): Name of the file to get summary for
         blocking (bool, optional): If True, waits for summary generation. Defaults to False
-        timeout (int, optional): Maximum time to wait in seconds. Defaults to 300
+        timeout (float, optional): Maximum time to wait in seconds. Will be converted to int. Defaults to 300
 
     Returns:
         JSONResponse: Contains either:
@@ -912,11 +944,23 @@ async def get_summary(
             - Error message: {"message": str, "status": str}
 
     Status Codes:
+        400: Bad request (invalid timeout value)
         404: Summary not found (non-blocking mode)
         408: Timeout waiting for summary (blocking mode)
         499: Client Closed Request
         500: Internal server error
     """
+
+    # Convert float timeout to int and validate to avoid negative values
+    timeout = int(timeout)
+    if timeout < 0:
+        return JSONResponse(
+            content={
+                "message": "Invalid timeout value. Timeout must be a non-negative integer.",
+                "error": f"Provided timeout value: {timeout}",
+            },
+            status_code=400,
+        )
 
     try:
         response = await NVIDIA_RAG.get_summary(

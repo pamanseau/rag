@@ -12,12 +12,11 @@ The following issues might arise when you work with the NVIDIA RAG Blueprint.
 
 - The Blueprint responses can have significant latency when using [NVIDIA API Catalog cloud hosted models](quickstart.md#deploy-with-docker-compose).
 - The accuracy of the pipeline is optimized for certain file types like `.pdf`, `.txt`, `.docx`. The accuracy may be poor for other file types supported by NvIngest, since image captioning is disabled by default.
+- **File Upload Limit**: The UI file upload interface has a hard limit of **100 files per upload batch**. When selecting more than 100 files, only the first 100 will be processed. For bulk uploads beyond this limit, use multiple upload batches or the [programmatic API](../notebooks/ingestion_api_usage.ipynb).
+
+- **Model Configuration Changes**: When updating model configurations in Kubernetes `values.yaml` (e.g., changing from 70B to 8B models), the RAG UI automatically detects and displays the new model configuration from the backend. No container rebuilds are required - simply redeploy the Helm chart with updated values and refresh the UI to see the new model settings in the Settings panel.
 - The NeMo LLM microservice may take upto 5-6 mins to start for every deployment.
-- While trying to upload multiple files at the same time, there may be a timeout error `Error uploading documents: [Error: aborted] { code: 'ECONNRESET' }`. Developers are encouraged to use API's directly for bulk uploading, instead of using the sameple rag-playground. The default timeout is set to 1 hour from UI side, while uploading.
-- In case of failure while uploading files, error messages may not be shown in the user interface of rag-playground. Developers are encouraged to check the `ingestor-server` logs for details.
 - B200 GPUs are not supported for the following advanced features:
-  - Self-Reflection to improve accuracy
-  - Query rewriting to Improve accuracy of Multi-Turn Conversations
   - Image captioning support for ingested documents
   - NeMo Guardrails for guardrails at input/output
   - VLM based inferencing in RAG
@@ -26,10 +25,22 @@ The following issues might arise when you work with the NVIDIA RAG Blueprint.
 - Sometimes when HTTP cloud NIM endpoints are used from `deploy/compose/.env`, the `nv-ingest-ms-runtime` still logs gRPC environment variables. Following log entries can be ignored.
 - Poor retrieval accuracy is observed with Milvus GPU indexing and search in B200 and A100. Switch to cpu based search and indexing.
 - If one of the file in a bulk ingestion job is of type svg, which is a unsupported format, the full bulk ingestion job fails.
-- Complicated filter expressions with custom metadata while sending a query, are not supported from the sample user interface.
+- Complicated filter expressions with custom metadata while sending a query, are not supported from the frontend UI.
 - Due to a known issue with MIG support, currently the ingestion profile has been scaled down while deploying the chart with MIG slicing This affects the ingestion performance during bulk ingestion, specifically large bulk ingestion jobs might fail.
+- Individual file uploads are limited to a maximum size of 400 MB during ingestion. Files exceeding this limit will be rejected and must be split into smaller segments before ingesting.
+- `llama-3.3-nemotron-super-49b-v1.5` model provides more verbose responses in non-reasoning mode compared to v1.0. For some queries the LLM model may respond with information not available in given context. Also for out of domain queries the model may provide responses based on it's own knowledge. Developers are strongly advised to [tune the prompt](./prompt-customization.md) for their usecases to avoid these scenarios.
+- The auto selected NIM-LLM profile for llama-3.3-nemotron-super-49b-v1.5 may not work for some GPUs. Follow steps outlined in [quickstart guide](quickstart.md) to select an optimized profile using `NIM_MODEL_PROFILE` before deploying.
+- Slow VDB upload is observed in Helm deployments for Elasticsearch (ES).
 
-- **Confidence threshold filtering issues**
+## Error details: [###] Unknown Error
+{'object': 'error', 'message': 'The model `nvidia/llama-3-3-nemotron-super-49b-v1-5` does not exist.', 'type': 'NotFoundError', 'param': None, 'code': 404}
+
+This error happens when incorrect model name is passed to the hosted llm endpoint on https://build.nvidia.com/nvidia/llama-3_3-nemotron-super-49b-v1_5. Ensure for on-prem deployed version of the model `nvidia/llama-3-3-nemotron-super-49b-v1-5` is passed and for cloud hosted version `nvidia/llama-3.3-nemotron-super-49b-v1.5` is passed.
+
+## Out of memory issues while deploying nim-llm service
+If you run into `torch.OutOfMemoryError: CUDA out of memory.` while deploying the model, this is most likely due to wrong model profile being auto selected during deployment. Refer to steps in [quickstart guide](quickstart.md) and set the correct profile using `NIM_MODEL_PROFILE` variable.
+
+## Confidence threshold filtering issues
   - If no documents are returned when using confidence threshold filtering, the threshold may be set too high. Try lowering the `confidence_threshold` value or ensure the reranker is enabled to provide relevance scores.
   - Confidence threshold filtering works best when reranker is enabled. Without reranker, documents may not have meaningful relevance scores.
   - For optimal results, use confidence threshold values between 0.3-0.7. Values above 0.7 may be too restrictive.
@@ -70,6 +81,32 @@ In case you were expecting to use cloud hosted model for this NIM, then ensure t
    export YOLOX_HTTP_ENDPOINT="https://ai.api.nvidia.com/v1/cv/nvidia/nemoretriever-page-elements-v2"
    export YOLOX_INFER_PROTOCOL="http"
 ```
+
+## Elasticsearch connection timeout
+
+If you encounter Elasticsearch connection timeout errors during ingestion, you can adjust the `ES_REQUEST_TIMEOUT` environment variable to increase the timeout duration. This is particularly useful when dealing with large documents or slow Elasticsearch clusters.
+
+### For Helm deployment
+
+Add the `ES_REQUEST_TIMEOUT` environment variable to the `envVars` section in your `values.yaml` file:
+
+```yaml
+envVars:
+  # ... existing environment variables ...
+  ES_REQUEST_TIMEOUT: "1200"  # Timeout in seconds (default is typically 600)
+```
+
+### For Docker Compose deployment
+
+Add the `ES_REQUEST_TIMEOUT` environment variable to the `environment` section in your `docker-compose-ingestor-server.yaml` file:
+
+```yaml
+environment:
+  # ... existing environment variables ...
+  ES_REQUEST_TIMEOUT: "1200"  # Timeout in seconds (default is typically 600)
+```
+
+After updating the configuration, restart the ingestor server and try the ingestion again. You can increase the timeout value if you continue to experience connection issues, but be aware that very high timeout values may indicate underlying performance issues with your Elasticsearch cluster.
 
 ## Device error
 
@@ -146,3 +183,20 @@ kube-prometheus-stack:
       port: 9101 # Changed from 9100 to 9101
       targetPort: 9101  # Changed from 9100 to 9101
 ```
+
+## Handling Hallucination and Out-of-Context Responses
+
+The current prompt configuration does not strictly enforce response generation from the retrieved context. This can result in the following scenarios:
+
+1. **Out-of-context responses**: The LLM generates responses that are not grounded in the provided context
+2. **Irrelevant context usage**: The model provides information from the retrieved context that doesn't directly answer the user's query
+
+### Solution
+
+These issues can be addressed by adding the following instruction to the `rag_chain` user prompt in [prompt.yaml](../src/nvidia_rag/rag_server/prompt.yaml):
+
+```yaml
+Handling Missing Information: If the context does not contain the answer, you must state directly that you do not have information on the specific subject of the user's query. For example, if the query is about the "capital of France", your response should be "I did not find information about capital of France." Do not add any other words, apologies, or explanations.
+```
+
+**Note**: Adding this information may impact response accuracy, especially when partial information is available instead of complete information in the retrieved context. The system may become more conservative in providing answers, potentially refusing to respond even when some relevant information exists in the context.

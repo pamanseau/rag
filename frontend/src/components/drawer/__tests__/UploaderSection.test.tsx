@@ -23,13 +23,14 @@ vi.mock('../../../store/useNewCollectionStore', () => {
   
   const useNewCollectionStore = () => mockStore;
   useNewCollectionStore.getState = () => mockStore;
+  useNewCollectionStore.setState = vi.fn();
   
   return { useNewCollectionStore };
 });
 
 // Mock child components
 vi.mock('../../../components/files/NvidiaUpload', () => ({
-  default: ({ onFilesChange }: any) => (
+  default: ({ onFilesChange }: { onFilesChange: (files: File[]) => void }) => (
     <div data-testid="nvidia-upload">
       <button onClick={() => onFilesChange([new File([''], 'test.pdf')])}>
         Add Files
@@ -54,7 +55,11 @@ describe('UploaderSection', () => {
       render(<UploaderSection />);
       
       const buttons = screen.getAllByRole('button');
-      const closeButton = buttons.find(button => button.classList.contains('p-1'));
+      // Look for the KUI button with neutral color and small size (close button)
+      const closeButton = buttons.find(button => 
+        button.classList.contains('nv-button--color-neutral') && 
+        button.classList.contains('nv-button--size-small')
+      );
       expect(closeButton).toBeInTheDocument();
     });
 
@@ -70,7 +75,11 @@ describe('UploaderSection', () => {
       render(<UploaderSection />);
       
       const buttons = screen.getAllByRole('button');
-      const closeButton = buttons.find(button => button.classList.contains('p-1'));
+      // Look for the KUI button with neutral color and small size (close button)
+      const closeButton = buttons.find(button => 
+        button.classList.contains('nv-button--color-neutral') && 
+        button.classList.contains('nv-button--size-small')
+      );
       expect(closeButton).toBeInTheDocument();
       
       // Test that clicking doesn't crash

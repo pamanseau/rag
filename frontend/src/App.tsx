@@ -19,6 +19,8 @@ import Chat from "./pages/Chat";
 import NewCollection from "./pages/NewCollection";
 import Layout from "./components/layout/Layout";
 import SettingsPage from "./pages/SettingsPage";
+import { useAppHealthStatus } from "./store/useSettingsStore";
+import { useHealthMonitoring } from "./hooks/useHealthMonitoring";
 
 /**
  * React Query client configuration with default options.
@@ -32,6 +34,30 @@ const queryClient = new QueryClient({
 });
 
 /**
+ * App content component that initializes settings and monitors health.
+ */
+function AppContent() {
+  // Get application health status data (Note: may be redundant since useHealthMonitoring also fetches health data)
+  useAppHealthStatus();
+  
+  // Initialize model settings from health endpoint data
+  // useHealthInitialization(); // Disabled: Models should start empty like other settings
+  
+  // Monitor service health and create notifications for issues
+  useHealthMonitoring();
+  
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Chat />} />
+        <Route path="/collections/new" element={<NewCollection />} />
+        <Route path="/settings" element={<SettingsPage />} />
+      </Routes>
+    </Layout>
+  );
+}
+
+/**
  * Main application component that sets up routing and provides React Query context.
  * 
  * @returns The main App component with routing and layout
@@ -40,13 +66,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Chat />} />
-            <Route path="/collections/new" element={<NewCollection />} />
-            <Route path="/settings" element={<SettingsPage />} />
-          </Routes>
-        </Layout>
+        <AppContent />
       </BrowserRouter>
     </QueryClientProvider>
   );

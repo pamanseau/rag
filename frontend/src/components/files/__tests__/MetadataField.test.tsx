@@ -110,7 +110,7 @@ describe('MetadataField', () => {
         <MetadataField
           fileName="test.pdf"
           field={field}
-          value="false"
+          value={false}
           onChange={mockOnChange}
         />
       );
@@ -127,7 +127,7 @@ describe('MetadataField', () => {
         <MetadataField
           fileName="test.pdf"
           field={field}
-          value="true"
+          value={true}
           onChange={mockOnChange}
         />
       );
@@ -143,7 +143,7 @@ describe('MetadataField', () => {
         <MetadataField
           fileName="test.pdf"
           field={field}
-          value="false"
+          value={false}
           onChange={mockOnChange}
         />
       );
@@ -151,7 +151,7 @@ describe('MetadataField', () => {
       const checkbox = screen.getByRole('checkbox');
       fireEvent.click(checkbox);
       
-      expect(mockOnChange).toHaveBeenCalledWith('is_public', 'true', 'boolean');
+      expect(mockOnChange).toHaveBeenCalledWith('is_public', true, 'boolean');
     });
   });
 
@@ -245,7 +245,7 @@ describe('MetadataField', () => {
       
       expect(screen.getByText('tags (array<string>)')).toBeInTheDocument();
       expect(screen.getByPlaceholderText('Enter string value')).toBeInTheDocument();
-      expect(screen.getByText('Add')).toBeInTheDocument();
+      expect(screen.getByTitle('Add item')).toBeInTheDocument();
     });
 
     it('displays existing array items', () => {
