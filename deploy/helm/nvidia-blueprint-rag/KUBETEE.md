@@ -3,7 +3,40 @@
 
 ## Pre-requis
 
-### Software Components
+### Building Custom Containers
+
+If you need to build custom containers for rag-server and ingestor-server (e.g., with code modifications), use the following commands from the `rag` directory root:
+
+#### Set Environment Variables
+
+```bash
+export REGISTRY=<your-registry>
+export TAG=<your-tag>
+```
+
+#### Build RAG-Server Container
+
+```bash
+docker buildx build --platform linux/amd64 \
+  -f src/nvidia_rag/rag_server/Dockerfile \
+  -t ${REGISTRY}/rag-server:${TAG} \
+  --push \
+  .
+```
+
+#### Build Ingestor-Server Container
+
+```bash
+docker buildx build --platform linux/amd64 \
+  -f src/nvidia_rag/ingestor_server/Dockerfile \
+  -t ${REGISTRY}/ingestor-server:${TAG} \
+  --push \
+  .
+```
+
+**Note:** The build context is the repository root (`.`), so ensure you run these commands from the `rag` directory. After building, update the image references in `values-staging.yaml` to use your custom images.
+
+### KubeTEE AI Provided Services
 
 The following are the default components included in this blueprint:
 

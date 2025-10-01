@@ -113,21 +113,21 @@ envVars:
   APP_RETRIEVER_TOPK: "10"
 
   ##===LLM Model specific configurations===
-  APP_LLM_MODELNAME: "nvidia/llama-3_3-nemotron-super-49b-v1_5"
+  APP_LLM_MODELNAME: "nvidia/llama-3.3-nemotron-super-49b-v1.5"
   # URL on which LLM model is hosted. If "", Nvidia hosted API is used
-  APP_LLM_SERVERURL: "nim-llm.nemo:8000"
+  APP_LLM_SERVERURL: "http://nim-llm.nemo:8000"
   # LLM model parameters
   LLM_MAX_TOKENS: "32768"
   LLM_TEMPERATURE: "0"
   LLM_TOP_P: "1.0"
 
   ##===Query Rewriter Model specific configurations===
-  APP_QUERYREWRITER_MODELNAME: "nvidia/llama-3_3-nemotron-super-49b-v1_5"
+  APP_QUERYREWRITER_MODELNAME: "nvidia/llama-3.3-nemotron-super-49b-v1.5"
   # URL on which query rewriter model is hosted. If "", Nvidia hosted API is used
   APP_QUERYREWRITER_SERVERURL: "nim-llm.nemo:8000"
 
   ##===Filter Expression Generator Model specific configurations===
-  APP_FILTEREXPRESSIONGENERATOR_MODELNAME: "nvidia/llama-3_3-nemotron-super-49b-v1_5"
+  APP_FILTEREXPRESSIONGENERATOR_MODELNAME: "nvidia/llama-3.3-nemotron-super-49b-v1.5"
   # URL on which filter expression generator model is hosted. If "", Nvidia hosted API is used
   APP_FILTEREXPRESSIONGENERATOR_SERVERURL: "nim-llm.nemo:8000"
   # enable filter expression generator for natural language to filter expression conversion
@@ -198,7 +198,7 @@ envVars:
   # Minimum groundedness score threshold (0-2)
   RESPONSE_GROUNDEDNESS_THRESHOLD: "1"
   # reflection llm
-  REFLECTION_LLM: "nvidia/llama-3_3-nemotron-super-49b-v1_5"
+  REFLECTION_LLM: "nvidia/llama-3.3-nemotron-super-49b-v1.5"
   # reflection llm server url. If "", Nvidia hosted API is used
   REFLECTION_LLM_SERVERURL: "nim-llm.nemo:8000"
 
@@ -308,7 +308,7 @@ ingestor-server:
 
     # === General ===
     # Summary Model Configurations
-    SUMMARY_LLM: "nvidia/llama-3_3-nemotron-super-49b-v1_5"
+    SUMMARY_LLM: "nvidia/llama-3.3-nemotron-super-49b-v1.5"
     SUMMARY_LLM_SERVERURL: "nim-llm.nemo:8000"
     SUMMARY_LLM_MAX_CHUNK_LENGTH: "50000"
     SUMMARY_CHUNK_OVERLAP: "200"
@@ -318,8 +318,8 @@ ingestor-server:
     LOGLEVEL: "INFO"
 
     # === NV-Ingest splitting configurations ===
-    APP_NVINGEST_CHUNKSIZE: "512"  # Size of chunks for splitting
-    APP_NVINGEST_CHUNKOVERLAP: "150"  # Overlap size for chunks
+    APP_NVINGEST_CHUNKSIZE: "384"  # Size of chunks for splitting
+    APP_NVINGEST_CHUNKOVERLAP: "100"  # Overlap size for chunks
     APP_NVINGEST_ENABLEPDFSPLITTER: "True"  # Enable PDF splitter
     APP_NVINGEST_SEGMENTAUDIO: "False"  # Enable audio segmentation for NV Ingest
 
@@ -421,7 +421,7 @@ serviceMonitor:
 
 # subsection: opentelemetry-collector
 opentelemetry-collector:
-  enabled: false
+  enabled: true
   mode: deployment
   image:
     repository: otel/opentelemetry-collector-contrib
@@ -552,7 +552,7 @@ nim-llm:
       value: ""
   model:
     ngcAPIKey: ""
-    name: "nvidia/Llama-3_3-Nemotron-Super-49B-v1_5"
+    name: "nvidia/llama-3.3-nemotron-super-49b-v1.5"
     hfTokenSecret: ""
 
 # subsection: nvidia-nim-llama-32-nv-embedqa-1b-v2
@@ -635,8 +635,8 @@ nv-ingest:
   ngcImagePullSecret:
     create: false
   image:
-    repository: "nvcr.io/nvidia/nemo-microservices/nv-ingest"
-    tag: "25.9.0"
+    repository: nvcr.io/nvidia/nemo-microservices/nv-ingest
+    tag: 25.9.0
   resources:
     limits:
       nvidia.com/gpu: 0
