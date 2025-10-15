@@ -2,11 +2,11 @@
   SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
   SPDX-License-Identifier: Apache-2.0
 -->
+# Enable query rewriting support for NVIDIA RAG Blueprint
 
-# Enable query rewriting support
-Query rewriting enables higher accuracy for multiturn queries by making an additional LLM call to decontextualize the incoming question, before sending it to the retrieval pipeline.
+You can enable query rewriting for the [NVIDIA RAG Blueprint](readme.md). Query rewriting enables higher accuracy for multiturn queries by making an additional LLM call to decontextualize the incoming question, before sending it to the retrieval pipeline.
 
-Once you have followed [steps in quick start guide](./quickstart.md#deploy-with-docker-compose) to launch the blueprint, to enable query rewriting support, developers have two options:
+After you have [deployed the blueprint](readme.md#deploy), to enable query rewriting support, developers have the following options:
 
 - [Enable query rewriting support](#enable-query-rewriting-support)
   - [Using on-prem model (Recommended)](#using-on-prem-model-recommended)
@@ -31,7 +31,7 @@ Once you have followed [steps in quick start guide](./quickstart.md#deploy-with-
    Export the below environment variable and relaunch the rag-server container.
    ```bash
    export APP_QUERYREWRITER_SERVERURL="nim-llm:8000"
-   export ENABLE_QUERYREWRITER="True"
+   export ENABLE_QUERYREWRITER="true"
    docker compose -f deploy/compose/docker-compose-rag-server.yaml up -d
    ```
 
@@ -46,7 +46,7 @@ Once you have followed [steps in quick start guide](./quickstart.md#deploy-with-
 
 2. Relaunch the rag-server container by enabling query rewriter.
    ```bash
-   export ENABLE_QUERYREWRITER="True"
+   export ENABLE_QUERYREWRITER="true"
    docker compose -f deploy/compose/docker-compose-rag-server.yaml up -d
    ```
 
@@ -70,15 +70,13 @@ This section describes how to enable Query Rewriting when you deploy by using He
     ```yaml
        envVars:
           ##===Query Rewriter Model specific configurations===
-          APP_QUERYREWRITER_MODELNAME: "nvidia/llama-3-3-nemotron-super-49b-v1-5"
           APP_QUERYREWRITER_SERVERURL: "nim-llm:8000"  # Fully qualified service name
-          ENABLE_QUERYREWRITER: "True"
+          ENABLE_QUERYREWRITER: "true"
     ```
 
-Follow the steps from [Quick Start Helm Deployment](./quickstart.md#deploy-with-helm-chart) and use the following command to deploy the chart.
+Follow the steps from [Deploy with Helm](deploy-helm.md) and use the following command to deploy the chart.
 
 ```bash
-helm install rag -n rag https://helm.ngc.nvidia.com/nvstaging/blueprint/charts/nvidia-blueprint-rag-v2.3.0-rc2.2.tgz \
 --username '$oauthtoken' \
 --password "${NGC_API_KEY}" \
 --set imagePullSecret.password=$NGC_API_KEY \

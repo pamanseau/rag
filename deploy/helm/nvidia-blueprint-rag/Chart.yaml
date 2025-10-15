@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: v2.3.0-rc2.2
+appVersion: v2.3.0
 dependencies:
 - condition: nim-llm.enabled
   name: nim-llm
@@ -9,10 +9,10 @@ dependencies:
   name: nvidia-nim-llama-32-nv-embedqa-1b-v2
   repository: https://helm.ngc.nvidia.com/nim/nvidia
   version: 1.9.0
-# - condition: nvidia-nim-llama-32-nemoretriever-1b-vlm-embed-v1.enabled
-#   name: nvidia-nim-llama-32-nemoretriever-1b-vlm-embed-v1
-#   repository: https://helm.ngc.nvidia.com/nvidia/nemo-microservices
-#   version: 1.7.0
+- condition: nvidia-nim-llama-32-nemoretriever-1b-vlm-embed-v1.enabled
+  name: nvidia-nim-llama-32-nemoretriever-1b-vlm-embed-v1
+  repository: https://helm.ngc.nvidia.com/nvidia/nemo-microservices
+  version: 1.7.0
 - condition: nvidia-nim-llama-32-nv-rerankqa-1b-v2.enabled
   name: nvidia-nim-llama-32-nv-rerankqa-1b-v2
   repository: https://helm.ngc.nvidia.com/nim/nvidia
@@ -28,7 +28,7 @@ dependencies:
 - condition: elasticsearch.enabled
   name: elasticsearch
   repository: https://charts.bitnami.com/bitnami
-  version: 22.1.6
+  version: 22.0.13
 - condition: zipkin.enabled
   name: zipkin
   repository: https://zipkin.io/zipkin-helm
@@ -40,8 +40,8 @@ dependencies:
 - condition: kube-prometheus-stack.enabled
   name: kube-prometheus-stack
   repository: https://prometheus-community.github.io/helm-charts
-  version: 77.10.0
+  version: 76.3.0
 description: An end to end Helm chart for the NVIDIA RAG Blueprint
 name: nvidia-blueprint-rag
 type: application
-version: v2.3.0-rc2.2
+version: v2.3.0

@@ -1,8 +1,3 @@
-# Ingestor Server Volume Mounting
-
-## Overview
-
-Mount a host directory to access NV-Ingest extraction results directly from the filesystem. Designed for advanced developers who need programmatic access to raw extraction results for custom processing pipelines or external vector database integration.
 
 ## Configuration
 
@@ -20,10 +15,6 @@ Mount a host directory to access NV-Ingest extraction results directly from the 
    ```bash
    # Enable disk persistence
    export APP_NVINGEST_SAVETODISK=True
-   
-   # Set host directory path (optional - customize as needed)
-   export INGESTOR_SERVER_EXTERNAL_VOLUME_MOUNT=./volumes/ingestor-server
-   
    # Set container internal path (optional - customize as needed)
    export INGESTOR_SERVER_DATA_DIR=/data/
    ```
@@ -70,13 +61,12 @@ The Helm chart supports persisting ingestor-server data to a PersistentVolumeCla
 
 ### Values
 
-Edit the values file [`values.yaml`](../deploy/helm/nvidia-blueprint-rag/values.yaml) and set:
 
 ```yaml
 ingestor-server:
   envVars:
     # Ensure results are written to disk inside the pod
-    APP_NVINGEST_SAVETODISK: "True"
+    APP_NVINGEST_SAVETODISK: "true"
     # Directory inside the container where results will be written
     INGESTOR_SERVER_DATA_DIR: "/data/"
 
@@ -111,7 +101,6 @@ Using a custom values file:
 
 ```bash
 helm upgrade --install rag -n rag \
-  https://helm.ngc.nvidia.com/nvstaging/blueprint/charts/nvidia-blueprint-rag-v2.3.0-rc2.2.tgz \
   --username '$oauthtoken' \
   --password "${NGC_API_KEY}" \
   --set imagePullSecret.password=$NGC_API_KEY \
@@ -123,7 +112,6 @@ Or with inline overrides:
 
 ```bash
 helm upgrade --install rag -n rag \
-  https://helm.ngc.nvidia.com/nvstaging/blueprint/charts/nvidia-blueprint-rag-v2.3.0-rc2.2.tgz \
   --username '$oauthtoken' \
   --password "${NGC_API_KEY}" \
   --set imagePullSecret.password=$NGC_API_KEY \
@@ -142,7 +130,6 @@ List results inside the ingestor-server pod (default mount path `/data/`):
 kubectl -n rag exec -it <ingestor-pod> -- ls -l /data/
 ```
 
-Copy data from the pod to your local machine:
 
 ```bash
 kubectl -n rag cp <ingestor-pod>:/data/ ./ingestor-data

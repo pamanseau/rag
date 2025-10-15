@@ -2,14 +2,19 @@
   SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
   SPDX-License-Identifier: Apache-2.0
 -->
+# Vision-Language Model (VLM) for Generation for NVIDIA RAG Blueprint
 
-# Vision-Language Model (VLM) for generation in NVIDIA RAG
+The Vision-Language Model (VLM) inference feature in the [NVIDIA RAG Blueprint](readme.md) enhances the system's ability to understand and reason about visual content that is **automatically retrieved from the knowledge base**. Unlike traditional image upload systems, this feature operates on **image citations** that are internally discovered during the retrieval process.
 
-## Overview
 
-The Vision-Language Model (VLM) inference feature in NVIDIA RAG enhances the system's ability to understand and reason about visual content that is **automatically retrieved from the knowledge base**. Unlike traditional image upload systems, this feature operates on **image citations** that are internally discovered during the retrieval process.
+> [!WARNING]
+>
+> B200 GPUs are not supported for VLM based inferencing in RAG.
+> For this feature, use H100 or A100 GPUs instead.
 
-### **How VLM Works in the RAG Pipeline**
+
+
+## **How VLM Works in the RAG Pipeline**
 
 The VLM feature follows this sophisticated flow:
 
@@ -23,7 +28,7 @@ The VLM feature follows this sophisticated flow:
 
 5. **Unified Response**: The user receives a single, coherent response that seamlessly incorporates both textual and visual understanding.
 
-### **Key Benefits**
+## **Key Benefits**
 
 - **Seamless Multimodal Experience**: Users don't need to manually upload images; visual content is automatically discovered and analyzed from images embedded in documents
 - **Improved Accuracy**: Enhanced response quality for documents containing images, charts, diagrams, and visual data
@@ -143,7 +148,7 @@ docker compose -f deploy/compose/docker-compose-rag-server.yaml up -d
 
 ---
 
-Continue following the rest of steps [in quickstart](quickstart.md) to deploy the ingestion-server and rag-server containers.
+Continue following the rest of the steps in [Deploy with Docker (Self-Hosted Models)](deploy-docker-self-hosted.md) to deploy the ingestion-server and rag-server containers.
 
 ## Using a Remote NVIDIA-Hosted NIM Endpoint (Optional)
 
@@ -160,9 +165,8 @@ export APP_VLM_SERVERURL="https://integrate.api.nvidia.com/v1/"
 docker compose -f deploy/compose/docker-compose-rag-server.yaml up -d
 ```
 
-Continue following the rest of steps [in quickstart](quickstart.md) to deploy the ingestion-server and rag-server containers.
+Continue following the rest of the steps in [Deploy with Docker (NVIDIA-Hosted Models)](deploy-docker-nvidia-hosted.md) to deploy the ingestion-server and rag-server containers.
 
----
 
 ## Using Helm Chart Deployment
 
@@ -182,7 +186,7 @@ To enable VLM inference in Helm-based deployments, follow these steps:
    APP_VLM_SERVERURL: "http://nim-vlm:8000/v1"  # Local VLM NIM endpoint
    ```
 
-  Also enable the `nim-vlm` helm chart
+  Also enable the `nim-vlm` service.
   ```yaml
   nim-vlm:
     enabled: true
@@ -193,7 +197,6 @@ To enable VLM inference in Helm-based deployments, follow these steps:
    Run the following command to upgrade or install your deployment:
 
    ```
-   helm upgrade --install rag -n <namespace> https://helm.ngc.nvidia.com/nvstaging/blueprint/charts/nvidia-blueprint-rag-v2.3.0-rc2.2.tgz \
      --username '$oauthtoken' \
      --password "${NGC_API_KEY}" \
      --set imagePullSecret.password=$NGC_API_KEY \
@@ -213,7 +216,7 @@ To enable VLM inference in Helm-based deployments, follow these steps:
 > [!Note]
 > For local VLM inference, ensure the VLM NIM service is running and accessible at the configured `APP_VLM_SERVERURL`. For remote endpoints, the `NGC_API_KEY` is required for authentication.
 
----
+
 
 ### **When VLM Processing Occurs**
 
@@ -223,7 +226,7 @@ VLM processing is triggered when:
 - Images are successfully extracted from MinIO storage
 - The VLM service is accessible and responding
 
----
+
 
 ## Troubleshooting
 
@@ -344,14 +347,13 @@ nim-llm:
 3) (Optional, recommended) Ensure features that depend on the LLM remain disabled:
 
 ```yaml
-ENABLE_QUERYREWRITER: "False"
-ENABLE_REFLECTION: "False"
+ENABLE_QUERYREWRITER: "false"
+ENABLE_REFLECTION: "false"
 ```
 
 4) Apply or upgrade the release:
 
 ```bash
-helm upgrade --install rag -n <namespace> https://helm.ngc.nvidia.com/nvstaging/blueprint/charts/nvidia-blueprint-rag-v2.3.0-rc1.tgz \
   --username '$oauthtoken' \
   --password "${NGC_API_KEY}" \
   --set imagePullSecret.password=$NGC_API_KEY \
@@ -360,4 +362,3 @@ helm upgrade --install rag -n <namespace> https://helm.ngc.nvidia.com/nvstaging/
 ```
 
 > [!Note]
-> In this mode, the RAG server will use the VLM output as the final response. Keep the embedding and reranker services enabled as in the default chart configuration. If you use a local VLM, also set `APP_VLM_SERVERURL` (for example, `http://nim-vlm:8000/v1`) and enable the `nim-vlm` subchart as shown above.
