@@ -2,6 +2,19 @@
   SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
   SPDX-License-Identifier: Apache-2.0
 -->
+# Configure Elasticsearch as Your Vector Database for NVIDIA RAG Blueprint
+
+The [NVIDIA RAG Blueprint](readme.md) supports multiple vector database backends including [Milvus](https://milvus.io/docs) and [Elasticsearch](https://www.elastic.co/elasticsearch/vector-database).
+Elasticsearch provides robust search capabilities and can be used as an alternative to Milvus for storing and retrieving document embeddings.
+
+After you have [deployed the blueprint](readme.md#deployment-options-for-rag-blueprint),
+use this documentation to configure Elasticsearch as your vector database.
+
+:::{tip}
+To navigate this page more easily, click the outline button at the top of the page. ![outline-button](assets/outline-button.png)
+
+
+## Prerequisites and Important Considerations Before You Start
 
 The following are some important notes to keep in mind before you switch from Milvus to Elasticsearch.
 
@@ -9,6 +22,19 @@ The following are some important notes to keep in mind before you switch from Mi
 
 - **Port Availability** – Elasticsearch runs on port 9200 by default. Ensure this port is available and not in conflict with other services.
 
+- **Folder Permissions** – Elasticsearch data is persisted in the `volumes/elasticsearch` directory. Make sure you create the directory and have appropriate permissions set.
+
+    ```bash
+    sudo mkdir -p deploy/compose/volumes/elasticsearch/
+    sudo chown -R 1000:1000 deploy/compose/volumes/elasticsearch/
+    ```
+
+   :::{note}
+   If the Elasticsearch container fails to start due to permission issues, you may optionally use `sudo chmod -R 777 deploy/compose/volumes/elasticsearch/` for broader access
+   :::
+
+
+## Docker Compose Configuration for Elasticsearch Vector Database
 
 Use the following steps to configure Elasticsearch as your vector database in Docker.
 
@@ -36,6 +62,28 @@ Use the following steps to configure Elasticsearch as your vector database in Do
 
    Access the RAG UI at `http://<host-ip>:8090`. In the UI, navigate to: Settings > Endpoint Configuration > Vector Database Endpoint → set to `http://elasticsearch:9200`.
 
+## Helm Deployment to Configure Elasticsearch as Vector Database
+
+If you're using Helm for deployment, use the following steps to configure Elasticsearch as your vector database.
+
+:::{note}
+**Performance Consideration**: Slow VDB upload is observed in Helm deployments for Elasticsearch (ES). For more details, refer to the [troubleshooting documentation](./troubleshooting.md).
+:::
+
+1. Configure Elasticsearch as the vector database in [`values.yaml`](../deploy/helm/nvidia-blueprint-rag/values.yaml).
+
+    ```yaml
+    envVars:
+      APP_VECTORSTORE_URL: "http://elasticsearch:9200"
+      APP_VECTORSTORE_NAME: "elasticsearch"
+
+    ingestor-server:
+      envVars:
+        APP_VECTORSTORE_URL: "http://elasticsearch:9200"
+        APP_VECTORSTORE_NAME: "elasticsearch"
+   ```
+
+2. Enable Elasticsearch deployment in [`values.yaml`](../deploy/helm/nvidia-blueprint-rag/values.yaml).
 
    ```yaml
    elasticsearch:
@@ -50,18 +98,24 @@ You should see a response that indicates the cluster status is green or yellow, 
 
 
 
-# Define Your Own Vector Database
+## Define Your Own Vector Database
 
 This enables you to integrate with any vector database that isn't already supported.
 
-> [!CAUTION]
-> This section is for advanced developers who need to integrate custom vector databases beyond the supported database options.
+:::{caution}
+This section is for advanced developers who need to integrate custom vector databases beyond the supported database options.
+:::
 
 For a complete example, refer to [Custom VDB Operator Notebook](../notebooks/building_rag_vdb_operator.ipynb).
 
-> [!TIP]
-> Choose your integration path:
-> - Start with Library Mode for fastest iteration during development (recommended for most users).
+:::{tip}
+Choose your integration path:
+- Start with Library Mode for fastest iteration during development (recommended for most users).
+- Advanced users who are comfortable with deployments can start directly with Server Mode. See: [Integrate Into NVIDIA RAG (Server Mode)](#integrate-custom-vector-database-into-nvidia-rag-servers-docker-mode).
+:::
+
+
+## Integrate Custom VDB in Library Mode (Developer-Friendly Approach)
 
 Before wiring your custom VDB into the servers, the quickest way to iterate is to run it in library mode. This is ideal for development, debugging, and ensuring the operator behaves correctly.
 
@@ -227,6 +281,13 @@ Follow these steps to add your custom vector database to the NVIDIA RAG servers 
 
 That’s it—after these steps, both the RAG server and the Ingestor will use your custom vector database when `APP_VECTORSTORE_NAME` is set to `your_custom_vdb`.
 
+## Integrate Custom Vector Database Into NVIDIA RAG Servers (Helm/Kubernetes Mode)
+
+:::{warning}
+**Advanced Developer Guide - Production Use Only**
+
+This section is for **advanced developers** with Kubernetes and Helm experience. Recommended for production environments only. For development and testing, use the [Docker Compose approach](#integrate-custom-vector-database-into-nvidia-rag-servers-docker-mode) instead.
+:::
 
 Before proceeding with Helm deployment, ensure you have completed the implementation steps mentioned above, including:
 
@@ -254,8 +315,10 @@ Once your custom vector database implementation is complete, you need to build c
        image: your-registry/your-ingestor-server:your-tag
    ```
 
-   > [!TIP]
-   > Use a public registry for easier deployment and accessibility.
+   :::{tip}
+   Use a public registry for easier deployment and accessibility.
+   :::
+
 2. **Build Ingestor server and RAG server image:**
    ```bash
    docker compose -f deploy/compose/docker-compose-ingestor-server.yaml build
@@ -324,8 +387,9 @@ Update your [`values.yaml`](../deploy/helm/nvidia-blueprint-rag/values.yaml) fil
      version: 1.0.0
    ```
 
-   > [!NOTE]
-   > Replace `your-custom-vdb`, `https://your-helm-repo.com/charts`, and `1.0.0` with your actual chart name, repository URL, and version.
+   :::{note}
+   Replace `your-custom-vdb`, `https://your-helm-repo.com/charts`, and `1.0.0` with your actual chart name, repository URL, and version.
+   :::
 
 3. **Add Helm repository and update dependencies:**
    ```bash
@@ -393,3 +457,69 @@ If you encounter issues during deployment:
    ```bash
    helm template rag nvidia-blueprint-rag/ -f nvidia-blueprint-rag/values.yaml
    ```
+
+## Implement Retrieval-Only Vector Database Integration
+
+You can integrate your own vector database with NVIDIA RAG by implementing only the retrieval functionality while managing ingestion separately. This approach allows you to use existing RAG server, [RAG UI](user-interface.md), and ingestor server components with your custom vector database backend.
+
+:::{note}
+This approach is ideal when you have an existing vector database with pre-indexed documents and want to leverage NVIDIA RAG's retrieval and generation capabilities without implementing full ingestion workflows into Nvidia RAG Blueprint.
+:::
+
+## Implementation Requirements
+
+Implement only the retrieval-focused methods from the `VDBRag` interface:
+
+**Required Methods:**
+- `__init__(vdb_endpoint, collection_name, embedding_model=None)`: Initialize connection
+- `close()`: Clean up connections
+- `__enter__()` / `__exit__()`: Context manager support
+- `check_health()`: Return database health status
+- `get_collection()`: Return available collections with metadata
+- `check_collection_exists(collection_name)`: Verify collection existence
+- `retrieval_langchain(query, collection_name, vectorstore=None, top_k=10, filter_expr="", otel_ctx=None)`: **Core retrieval method** - Must return `langchain_core.documents.Document` objects with:
+  - `page_content`: The document text content
+  - `metadata`: Dictionary containing:
+    - `source`: Document source identifier (e.g., "file1.pdf")
+    - `content_metadata`: Nested dictionary with additional metadata (e.g., `{"topic": "science"}`)
+    - `collection_name`: To be added in each Document's metadata
+- `get_langchain_vectorstore(collection_name)`: Return vectorstore handle (can return `None`)
+
+**Optional Methods:** Raise `NotImplementedError` for all ingestion methods (`create_collection()`, `write_to_index()`, etc.)
+
+**Example Document Structure:**
+```python
+from langchain_core.documents import Document
+
+# Example return from retrieval_langchain()
+documents = [
+    Document(
+        page_content="Albert Einstein was playing chess with his friend",
+        metadata={
+            "source": "file1.pdf",
+            "content_metadata": {"topic": "science"},
+            "collection_name": "my_collection"
+        }
+    )
+]
+```
+
+## Integration Steps
+
+Follow the steps in [## Integrate Into NVIDIA RAG (Server Mode - Docker)](#integrate-custom-vector-database-into-nvidia-rag-servers-docker-mode) with these key differences:
+
+1. **Skip ingestion implementations** - Raise `NotImplementedError` for ingestion methods
+2. **Handle document indexing separately** - Use your own processes or tools
+3. **Ensure proper document format** - Your `retrieval_langchain` method must return `Document` objects with metadata
+
+The integration process remains the same: create your VDB class, register it, configure environment variables, and deploy.
+
+
+
+## Related Topics
+
+- [NVIDIA RAG Blueprint Documentation](readme.md)
+- [Best Practices for Common Settings](accuracy_perf.md).
+- [RAG Pipeline Debugging Guide](debugging.md)
+- [Troubleshoot](troubleshooting.md)
+- [Notebooks](notebooks.md)

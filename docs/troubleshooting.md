@@ -7,10 +7,13 @@
 The following issues might arise when you work with the [NVIDIA RAG Blueprint](readme.md).
 
 
+:::{note}
+For the full list of known issues, see [Known Issues](https://github.com/NVIDIA-AI-Blueprints/rag/blob/main/CHANGELOG.md#all-known-issues)
+:::
 
-
-> [!TIP]
-> To navigate this page more easily, click the outline button at the top of the page. (<img src="assets/outline-button.png">)
+:::{tip}
+To navigate this page more easily, click the outline button at the top of the page. ![outline-button](assets/outline-button.png)
+:::
 
 
 
@@ -29,10 +32,9 @@ export NV_INGEST_MAX_UTIL=8
 docker compose -f deploy/compose/docker-compose-ingestor-server.yaml up -d 
 ```
 
-> [!NOTE]
-> This can reduce the page-per-second performance for the ingestion. For maximum performance, [on-prem deployment](deploy-docker-self-hosted.md) is recommended.
-
-
+:::{note}
+This can reduce the page-per-second performance for the ingestion. For maximum performance, [on-prem deployment](deploy-docker-self-hosted.md) is recommended.
+:::
 
 ## Confidence threshold filtering issues
 
@@ -162,8 +164,9 @@ These issues can be addressed by adding the following instruction to the `rag_ch
 Handling Missing Information: If the context does not contain the answer, you must state directly that you do not have information on the specific subject of the user's query. For example, if the query is about the "capital of France", your response should be "I did not find information about capital of France." Do not add any other words, apologies, or explanations.
 ```
 
-> [!IMPORTANT]
-> Adding this information may impact response accuracy, especially when partial information is available instead of complete information in the retrieved context. The system may become more conservative in providing answers, potentially refusing to respond even when some relevant information exists in the context.
+:::{important}
+Adding this information may impact response accuracy, especially when partial information is available instead of complete information in the retrieved context. The system may become more conservative in providing answers, potentially refusing to respond even when some relevant information exists in the context.
+:::
 
 
 
@@ -209,3 +212,52 @@ kube-prometheus-stack:
       targetPort: 9101  # Changed from 9100 to 9101
 ```
 
+
+
+## Out of memory issues while deploying nim-llm service
+
+If you run into `torch.OutOfMemoryError: CUDA out of memory.` while deploying the model, this is most likely due to wrong model profile being auto selected during deployment. Refer to steps in the appropriate [deployment guide](readme.md#deployment-options-for-rag-blueprint) and set the correct profile using `NIM_MODEL_PROFILE` variable.
+
+
+
+## Password Issue Fix
+
+If you encounter any `password authentication failed` issues with the structured retriever container,
+consider removing the volumes directory located at `deploy/compose/volumes`.
+In this case, you may need to reprocess the data ingestion.
+
+
+
+## pymilvus error: not allowed to retrieve raw data of field sparse
+
+```
+pymilvus.exceptions.MilvusException: <MilvusException: (code=65535, message=not allowed to retrieve raw data of field sparse)>
+```
+This happens when a collection created with vector search type `hybrid` is accessed using vector search type `dense` on retrieval side. Make sure both the search types are same in ingestor-server-compose and rag-server-compose file using `APP_VECTORSTORE_SEARCHTYPE` environment variable.
+
+
+
+## Reset the entire cache
+
+To reset the entire cache, you can run the following command.
+This deletes all the volumes associated with the containers, including the cache.
+
+```bash
+docker compose down -v
+```
+
+
+
+## Running out of credits
+
+If you run out of credits for the NVIDIA API Catalog,
+you will need to obtain more credits to continue using the API.
+Please contact your NVIDIA representative to get more credits.
+
+
+
+
+## Related Topics
+
+- [Debugging](debugging.md)
+- [Release Notes](release-notes.md)

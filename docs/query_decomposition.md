@@ -1,13 +1,55 @@
-You can enable query decomposition in both Docker and Helm deployments:
+<!--
+  SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+  SPDX-License-Identifier: Apache-2.0
+-->
+# Query Decomposition for NVIDIA RAG Blueprint
 
-1. **Docker Deployment** – Use Docker to deploy RAG on your hardware
-2. **Helm Deployment** – Deploys as a Helm chart on a Kubernetes cluster (local deployment only)
+By default, query decomposition is disabled in the [NVIDIA RAG Blueprint](readme.md). 
+When you turn on query decomposition you boost accuracy for multi-hop reasoning or context-rich queries. 
 
-## Option 1: Docker Deployment (Default)
+Query decomposition is an advanced Retrieval-Augmented Generation (RAG) technique that breaks down complex, multi-faceted queries into simpler, focused subqueries. 
+Each subquery is processed independently to gather comprehensive context, which is then synthesized into a final comprehensive response.
 
-### Step 1: Deploy all the dependent services
+- Key Benefits
 
-### Step 2: Enable query decomposition
+  - **Better Context Coverage** – Captures multiple aspects of complex queries.
+  - **Iterative Refinement** – Follows up with additional questions based on initial findings.
+  - **Multi-perspective Analysis** – Approaches queries from different angles.
+
+- Core Components
+
+  - **Subquery Generation** – LLM-powered breakdown of complex queries.
+  - **Iterative Processing** – Multi-round refinement with follow-up questions.
+  - **Response Synthesis** – Combines insights from all subqueries.
+
+
+
+## Accuracy Improvement Example
+
+The following example that uses the [HotpotQA](https://hotpotqa.github.io/) dataset demonstrates the accuracy improvement from enabling query decomposition.
+
+```text
+Query: I am thinking of a Ancient Roman City. The city was destroyed by volcanic eruption. The eruption occurred in the year 79 AD. The volcano was a stratovolcano. Where was the session held where it was decided that the city would be named a UNESCO world heritage site?
+
+Reference Answer: Naples
+
+The response with no query decomposition is:
+
+    "The session where it was decided that the city would be named a UNESCO World Heritage Site was held in 1997. However, the specific location of this session is not mentioned in the provided context."
+
+The response with query decomposition is:
+
+    "Naples"
+```
+
+
+## Docker Deployment
+
+### Deploy all the dependent services
+
+Follow the deployment guide for [Self-Hosted Models](deploy-docker-self-hosted.md) or [NVIDIA-Hosted Models](deploy-docker-nvidia-hosted.md).
+
+### Enable query decomposition
 
 Set the environment variable to enable query decomposition:
 
@@ -22,8 +64,9 @@ After setting these environment variables, you must restart the RAG server for `
 docker compose -f deploy/compose/docker-compose-rag-server.yaml up -d
 ```
 
-## Option 2: Helm Deployment (Local Deployment Only)
+## Helm Deployment
 
+You can deploy RAG with query decomposition using Helm for Kubernetes environments. For details, see [Deploy with Helm](deploy-helm.md).
 
 ### Update RAG Blueprint Deployment with Query Decomposition
 
@@ -73,9 +116,10 @@ This query requires multiple interconnected steps:
 ## How Query Decomposition Works
 To visualize how query decomposition works, see the diagram below:
 
-![Query Decomposition Flow](assets/query_decomposition.jpeg)
+```{figure} assets/query_decomposition.jpeg
 
-**Figure:** *Query Decomposition Flow — The system breaks down a complex query into subqueries, processes each iteratively, and synthesizes a comprehensive answer.*
+Query Decomposition Flow — The system breaks down a complex query into subqueries, processes each iteratively, and synthesizes a comprehensive answer.
+```
 
 
 ### Core Algorithm
@@ -91,3 +135,17 @@ To visualize how query decomposition works, see the diagram below:
 4. **Termination Check**: Stop if no follow-up needed or max depth reached
 5. **Final Synthesis**: Generate comprehensive response from all contexts and conversation
 
+
+
+:::{important}
+Query decomposition is not available for direct LLM calls (when `use_kb=false`). This feature requires the knowledge base integration to process subqueries and retrieve relevant documents. For direct LLM interactions, queries are processed without decomposition.
+:::
+
+
+
+## Related Topics
+
+- [Best Practices for Common Settings](accuracy_perf.md).
+- [Deploy with Docker (Self-Hosted Models)](deploy-docker-self-hosted.md)
+- [Deploy with Docker (NVIDIA-Hosted Models)](deploy-docker-nvidia-hosted.md)
+- [Deploy with Helm](deploy-helm.md)

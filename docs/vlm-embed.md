@@ -8,6 +8,23 @@
 
 Requirements: An NVIDIA GPU and a valid `NGC_API_KEY`.
 
+:::{note}
+**Early Access**: Currently, `nvidia/llama-3.2-nemoretriever-1b-vlm-embed-v1` is in early access preview.
+:::
+
+:::{note}
+**PDF Support Only**: The VLM embedding feature is currently only supported for PDF documents. Other document formats (Word, PowerPoint, etc.) are not supported with VLM embedding.
+:::
+
+## Limitations
+
+- The VLM embedding feature is experimental and responses may not be accurate.
+- Summary generation doesn't work when this feature is enabled.
+
+## 1. Start the VLM Embedding NIM locally
+
+We provide a dedicated compose profile that starts only the VLM embedding service so the text embedding service does not start.
+You can skip this step if you are interested in using cloud hosted endpoints.
 
 ```bash
 export USERID=$(id -u)
@@ -72,6 +89,14 @@ export APP_NVINGEST_EXTRACTPAGEASIMAGE="false"
 
 docker compose -f deploy/compose/docker-compose-ingestor-server.yaml up -d
 ```
+
+### Embed entire pages as images (experimental)
+
+Extractor captures each page as a single image (`APP_NVINGEST_EXTRACTPAGEASIMAGE="True"`); embedder processes page images via `APP_NVINGEST_IMAGE_ELEMENTS_MODALITY="image"`. Other extraction types are disabled to avoid duplicating content.
+
+:::{note}
+Citations don't work in the `generate` and `search` APIs of the RAG server with this configuration.
+:::
 
 ```bash
 # Treat each page as a single image (turn off other extractors)

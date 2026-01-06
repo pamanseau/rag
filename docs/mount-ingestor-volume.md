@@ -51,7 +51,9 @@ Each `.jsonl` file contains structured extraction metadata including text segmen
 
 ---
 
-**Note**: This is an advanced feature for custom processing workflows. Standard RAG functionality stores results directly in the vector database.
+:::{note}
+This is an advanced feature for custom processing workflows. Standard RAG functionality stores results directly in the vector database.
+:::
 
 ## Helm (Kubernetes)
 

@@ -6,9 +6,9 @@
 
 You can enable hybrid search for [NVIDIA RAG Blueprint](readme.md). Hybrid search enables higher accuracy for documents having more domain specific technical jargons. It combines sparse and dense representations to leverage the strengths of both retrieval methods—sparse models (e.g., BM25) excel at keyword matching, while dense embeddings (e.g., vector-based search) capture semantic meaning. This allows hybrid search to retrieve relevant documents even when technical jargon or synonyms are used.
 
-After you have [deployed the blueprint](readme.md#deploy), to enable hybrid search support for Milvus Vector Database, developers can follow below steps:
+After you have [deployed the blueprint](readme.md#deployment-options-for-rag-blueprint), to enable hybrid search support for Milvus Vector Database, developers can follow below steps:
 
-# Steps
+## Steps
 
 1. Set the search type to `hybrid`
    ```bash
@@ -47,5 +47,6 @@ Redeploy the chart with the updated configuration:
   -f deploy/helm/nvidia-blueprint-rag/values.yaml
 ```
 
-**📝 Note:**
+:::{note}
 Preexisting collections in Milvus created using search type `dense` won't work, when the search type is changed to `hybrid`. If you are switching the search type, ensure you are creating new collection and re-uploading documents before doing retrieval.
+:::

@@ -138,8 +138,9 @@ If you don't have sufficient GPU resources for on-premises deployment, you can u
    ```
 
 
-[!NOTE]
+:::{note}
 When using NVIDIA-hosted models, you must obtain an API key. See [Get an API Key](api-key.md) for instructions.
+:::
 
 ## Reflection Support via Helm Deployment
 

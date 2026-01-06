@@ -5,8 +5,8 @@
 # Migration Guide for NVIDIA RAG Blueprint
 
 
-> [!TIP]
-> To navigate this page more easily, click the outline button at the top of the page. (<img src="assets/outline-button.png">)
+:::{tip}
+To navigate this page more easily, click the outline button at the top of the page. [outline-button](assets/outline-button.png)
 
 
 ## Migration Guide: v2.2.0 to v2.3.0
@@ -53,7 +53,7 @@ In RAG 2.1.0, the the behavior of POST /documents API which can be used to uploa
 
 ### API Changes
 
-Updated openapi schemas are available [here](./api_reference/).
+Updated OpenAPI schemas are available [here](api-rag.md) and [here](api-ingestor.md).
 
 ### 2.1 Changed Endpoints and Features
 
@@ -87,7 +87,7 @@ This guide outlines the key changes and steps required for migration.
 
 ### 2. API Changes
 
-Updated openapi schemas are available [here](./api_reference/).
+Updated OpenAPI schemas are available [here](api-rag.md) and [here](api-ingestor.md).
 
 
 #### 2.1 New Endpoints and Features
@@ -136,7 +136,7 @@ Updated openapi schemas are available [here](./api_reference/).
 
 #### Step 1: Deploy Two Separate Containers
 
-Ensure that you run two separate containers for **RAG Server** and **Ingestion Server** by following the appropriate [deployment guide](readme.md#deploy).
+Ensure that you run two separate containers for **RAG Server** and **Ingestion Server** by following the appropriate [deployment guide](readme.md#deployment-options-for-rag-blueprint).
 
 #### Step 2: Update API Calls
 

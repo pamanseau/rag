@@ -85,6 +85,11 @@ envVars:
   PROMPT_CONFIG_FILE: "/prompt.yaml"
   PROMETHEUS_MULTIPROC_DIR: "/tmp-data/prom_data"
 
+  ##===Authentication===
+  # Set LLM_API_KEY if non-NVIDIA hosted LLM API endpoint is being used
+  # If not set, NVIDIA_API_KEY will be used as fallback
+  LLM_API_KEY: ""
+
   ##===MINIO specific configurations used to store multimodal base64 content===
   MINIO_ENDPOINT: "rag-minio:9000"
   MINIO_ACCESSKEY: "minioadmin"
@@ -276,6 +281,11 @@ ingestor-server:
     MINIO_ENDPOINT: "rag-minio:9000"
     MINIO_ACCESSKEY: "minioadmin"
     MINIO_SECRETKEY: "minioadmin"
+
+    # === Authentication ===
+    # Set LLM_API_KEY if non-NVIDIA hosted LLM API endpoint is being used
+    # If not set, NVIDIA_API_KEY will be used as fallback
+    LLM_API_KEY: ""
 
     # === Embeddings Configurations ===
     APP_EMBEDDINGS_SERVERURL: "nemoretriever-embedding-ms:8000"
@@ -557,7 +567,7 @@ nim-llm:
   image:
     repository: nvcr.io/nim/nvidia/llama-3.3-nemotron-super-49b-v1.5
     pullPolicy: IfNotPresent
-    tag: "1.13.1"
+    tag: "1.14.0"
   resources:
     limits:
       nvidia.com/gpu: 1
@@ -579,7 +589,7 @@ nvidia-nim-llama-32-nv-embedqa-1b-v2:
     name: "nemoretriever-embedding-ms"
   image:
     repository: nvcr.io/nim/nvidia/llama-3.2-nv-embedqa-1b-v2
-    tag: "1.10.0"
+    tag: "1.10.1"
   resources:
     limits:
       nvidia.com/gpu: 1
