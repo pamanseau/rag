@@ -23,6 +23,7 @@ ENABLE_REFLECTION=true
 MAX_REFLECTION_LOOP=3                    # Maximum number of refinement attempts (default: 3)
 CONTEXT_RELEVANCE_THRESHOLD=1            # Minimum relevance score 0-2 (default: 1)
 RESPONSE_GROUNDEDNESS_THRESHOLD=1        # Minimum groundedness score 0-2 (default: 1)
+REFLECTION_LLM="nvidia/llama-3.3-nemotron-super-49b-v1.5"  # Model for reflection (default)
 REFLECTION_LLM_SERVERURL="nim-llm:8000"  # Default on-premises endpoint for reflection LLM
 ```
 
@@ -65,6 +66,7 @@ The reflection feature supports the following deployment options:
    - **Required**: 8x A100 80GB or H100 80GB GPUs for optimal latency-optimized deployment
    - For detailed GPU requirements and supported model configurations, refer to the [NVIDIA NIM documentation](https://docs.nvidia.com/nim/large-language-models/latest/supported-models.html).
 
+
 ### On-Premises Deployment Steps
 
 1. Authenticate Docker with NGC using your NVIDIA API key:
@@ -93,6 +95,7 @@ The reflection feature supports the following deployment options:
    docker ps --format "table {{.Names}}\t{{.Status}}"
    ```
 
+5. Open the [RAG UI](user-interface.md) and test the reflection capability.
 
 
 ## NVIDIA-Hosted Models (Alternative)
@@ -122,6 +125,7 @@ If you don't have sufficient GPU resources for on-premises deployment, you can u
    export REFLECTION_LLM_SERVERURL="nim-llm:8000"
 
    # Choose the reflection model (options below)
+   export REFLECTION_LLM="nvidia/llama-3.3-nemotron-super-49b-v1.5"  # Default option
    # export REFLECTION_LLM="meta/llama-3.1-405b-instruct"  # Alternative option
    ```
 
@@ -137,6 +141,8 @@ If you don't have sufficient GPU resources for on-premises deployment, you can u
    docker ps --format "table {{.Names}}\t{{.Status}}"
    ```
 
+5. Open the [RAG UI](user-interface.md) and test the reflection capability.
+
 
 :::{note}
 When using NVIDIA-hosted models, you must obtain an API key. See [Get an API Key](api-key.md) for instructions.
@@ -149,6 +155,7 @@ You can enable self-reflection through Helm when you deploy the RAG Blueprint.
 ### Prerequisites
 
 - Only on-premises reflection deployment is supported in Helm
+- The model used is: `nvidia/llama-3.3-nemotron-super-49b-v1.5`.
 
 ### Deployment Steps
 
@@ -156,10 +163,11 @@ You can enable self-reflection through Helm when you deploy the RAG Blueprint.
 
    ```yaml
    # === Reflection ===
-   ENABLE_REFLECTION: "true"
+   ENABLE_REFLECTION: "True"
    MAX_REFLECTION_LOOP: "3"
    CONTEXT_RELEVANCE_THRESHOLD: "1"
    RESPONSE_GROUNDEDNESS_THRESHOLD: "1"
+   REFLECTION_LLM: "nvidia/llama-3.3-nemotron-super-49b-v1.5"
    REFLECTION_LLM_SERVERURL: "nim-llm:8000"
    ```
 
@@ -168,6 +176,7 @@ You can enable self-reflection through Helm when you deploy the RAG Blueprint.
    Follow the steps from [Deploy with Helm](deploy-helm.md) and run:
 
    ```bash
+   helm install rag -n rag https://helm.ngc.nvidia.com/nvidia/blueprint/charts/nvidia-blueprint-rag-v2.3.2.tgz \
      --username '$oauthtoken' \
      --password "${NGC_API_KEY}" \
      --set imagePullSecret.password=$NGC_API_KEY \

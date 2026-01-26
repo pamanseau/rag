@@ -93,6 +93,7 @@ If you're using Helm for deployment, follow these steps to enable audio ingestio
 3. Apply the updated Helm chart by running the following code.
 
    ```bash
+   helm upgrade --install rag -n rag https://helm.ngc.nvidia.com/nvidia/blueprint/charts/nvidia-blueprint-rag-v2.3.2.tgz \
     --username '$oauthtoken' \
     --password "${NGC_API_KEY}" \
     --set imagePullSecret.password=$NGC_API_KEY \
@@ -131,3 +132,13 @@ To enable audio segmentation, add the following export command to your environme
 ```bash
 export APP_NVINGEST_SEGMENTAUDIO=True
 ```
+
+
+
+## Related Topics
+
+- [NVIDIA RAG Blueprint Documentation](readme.md)
+- [Best Practices for Common Settings](accuracy_perf.md).
+- [RAG Pipeline Debugging Guide](debugging.md)
+- [Troubleshoot](troubleshooting.md)
+- [Notebooks](notebooks.md)

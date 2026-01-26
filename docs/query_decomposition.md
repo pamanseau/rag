@@ -43,6 +43,7 @@ The response with query decomposition is:
 ```
 
 
+
 ## Docker Deployment
 
 ### Deploy all the dependent services
@@ -73,6 +74,7 @@ You can deploy RAG with query decomposition using Helm for Kubernetes environmen
 Use the Helm upgrade command below to enable query decomposition in RAG Blueprint by setting `ENABLE_QUERY_DECOMPOSITION` and `MAX_RECURSION_DEPTH`:
 
 ```bash
+helm upgrade rag -n rag https://helm.ngc.nvidia.com/nvidia/blueprint/charts/nvidia-blueprint-rag-v2.3.2.tgz \
   --username '$oauthtoken' \
   --password "${NGC_API_KEY}" \
   --set imagePullSecret.password=${NGC_API_KEY} \
@@ -84,6 +86,8 @@ Use the Helm upgrade command below to enable query decomposition in RAG Blueprin
 ## When to Use Query Decomposition
 
 Query decomposition is especially valuable for multi-hop or complex queries that involve multiple steps or aspects. By breaking down a complex question into smaller, focused subqueries, the system can generate intermediate answers for each part. These intermediate responses are then combined to produce a comprehensive and accurate final answer.
+
+**Example: Complex Multihop Query**
 
 ```
 "If my future wife has the same first name as the 15th first lady of the United States' mother
@@ -98,16 +102,27 @@ This query requires multiple interconnected steps:
 5. Combine the two names to form the final answer
 ```
 
+## When NOT to Use Query Decomposition
+
+**Simple Factual Questions**
+```
+"What is the capital of France?"
+(Simple lookup, no decomposition needed)
+```
+
+**Single-concept Queries**
 ```
 "Define machine learning"
 (Direct definition, no sub-aspects needed)
 ```
 
+**Time-sensitive Queries**
 ```
 "What's the current stock price of NVIDIA?"
 (Real-time data, decomposition adds latency)
 ```
 
+**Highly Specific Technical Questions**
 ```
 "What's the syntax for creating a Python dictionary?"
 (Specific syntax, no multiple perspectives needed)

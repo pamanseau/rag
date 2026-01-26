@@ -30,7 +30,7 @@ After you have [deployed the blueprint](readme.md#deployment-options-for-rag-blu
    Export the below environment variable and relaunch the rag-server container.
    ```bash
    export APP_QUERYREWRITER_SERVERURL="nim-llm:8000"
-   export ENABLE_QUERYREWRITER="true"
+   export ENABLE_QUERYREWRITER="True"
    docker compose -f deploy/compose/docker-compose-rag-server.yaml up -d
    ```
 
@@ -45,7 +45,7 @@ After you have [deployed the blueprint](readme.md#deployment-options-for-rag-blu
 
 2. Relaunch the rag-server container by enabling query rewriter.
    ```bash
-   export ENABLE_QUERYREWRITER="true"
+   export ENABLE_QUERYREWRITER="True"
    docker compose -f deploy/compose/docker-compose-rag-server.yaml up -d
    ```
 
@@ -73,13 +73,15 @@ Only on-prem deployment of the LLM is supported. The model must be deployed sepa
     ```yaml
        envVars:
           ##===Query Rewriter Model specific configurations===
+          APP_QUERYREWRITER_MODELNAME: "nvidia/llama-3.3-nemotron-super-49b-v1.5"
           APP_QUERYREWRITER_SERVERURL: "nim-llm:8000"  # Fully qualified service name
-          ENABLE_QUERYREWRITER: "true"
+          ENABLE_QUERYREWRITER: "True"
     ```
 
 Follow the steps from [Deploy with Helm](deploy-helm.md) and use the following command to deploy the chart.
 
 ```bash
+helm install rag -n rag https://helm.ngc.nvidia.com/nvidia/blueprint/charts/nvidia-blueprint-rag-v2.3.2.tgz \
 --username '$oauthtoken' \
 --password "${NGC_API_KEY}" \
 --set imagePullSecret.password=$NGC_API_KEY \

@@ -28,13 +28,14 @@ Use the following procedure to enable observability with Docker.
     docker compose -f deploy/compose/observability.yaml up -d
     ```
 
+3. Enable tracing in the RAG server by setting `APP_TRACING_ENABLED` is set to `"True"` in `docker-compose-rag-server.yaml`.
 
     ```yaml
     services:
     rag-server:
         environment:
         # Tracing
-        APP_TRACING_ENABLED: "true"
+        APP_TRACING_ENABLED: "True"
     ```
 
 4. Start the RAG Server by following the instructions in the appropriate [deployment guide](readme.md#deployment-options-for-rag-blueprint).
@@ -99,6 +100,10 @@ After tracing is enabled and running, you can view inputs and outputs of differe
 
 
 
+## Enable Observability with Helm
+
+Use the following procedure to enable observability with Helm.
+
 ### Enable OpenTelemetry Collector, Zipkin and Prometheus stack
 
 1. Modify `values.yaml`:
@@ -108,7 +113,7 @@ After tracing is enabled and running, you can view inputs and outputs of differe
    ```yaml
    env:
    # ... existing code ...
-   APP_TRACING_ENABLED: "true"
+   APP_TRACING_ENABLED: "True"
 
    # ... existing code ...
    serviceMonitor:
@@ -129,6 +134,7 @@ Redeploy the Helm chart to apply these changes:
 
 ```sh
 helm uninstall rag -n rag
+helm install rag -n rag https://helm.ngc.nvidia.com/nvidia/blueprint/charts/nvidia-blueprint-rag-v2.3.2.tgz \
 --username '$oauthtoken' \
 --password "${NGC_API_KEY}" \
 --set imagePullSecret.password=$NGC_API_KEY \
@@ -136,3 +142,30 @@ helm uninstall rag -n rag
 -f deploy/helm/nvidia-blueprint-rag/values.yaml
 ```
 
+### Port-forwarding Zipkin and Grafana dashboards
+
+For Helm deployments, to port-forward services to your local computer, use the following instructions:
+
+- [Zipkin UI](https://zipkin.io/) – Run the following code to port-forward the Zipkin service to your local computer. Then access the Zipkin UI at `http://localhost:9411`.
+
+  ```sh
+  kubectl port-forward -n rag service/rag-zipkin 9411:9411 --address 0.0.0.0
+  ```
+
+- [Grafana UI](https://grafana.com/) – Run the following code to port-forward the Grafana service to your local computer. Then access the Grafana UI at `http://localhost:3001` and use the default credentials (`admin`/`admin`).
+
+  ```sh
+  kubectl port-forward -n rag service/rag-grafana 3001:80 --address 0.0.0.0
+  ```
+
+For detailed information on tracing, refer to [Viewing Traces in Zipkin](#view-traces-in-zipkin) and [Viewing Metrics in Grafana Dashboard](#view-metrics-in-grafana).
+
+
+
+## Related Topics
+
+- [NVIDIA RAG Blueprint Documentation](readme.md)
+- [Best Practices for Common Settings](accuracy_perf.md).
+- [RAG Pipeline Debugging Guide](debugging.md)
+- [Troubleshoot](troubleshooting.md)
+- [Notebooks](notebooks.md)

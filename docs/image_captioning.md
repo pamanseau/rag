@@ -40,7 +40,7 @@ For this feature, use H100 or A100 GPUs instead.
 3. Enable image captioning
    Export the below environment variable and relaunch the ingestor-server container.
    ```bash
-   export APP_NVINGEST_EXTRACTIMAGES="true"
+   export APP_NVINGEST_EXTRACTIMAGES="True"
    export APP_NVINGEST_CAPTIONENDPOINTURL="http://vlm-ms:8000/v1/chat/completions"
    docker compose -f deploy/compose/docker-compose-ingestor-server.yaml up -d
    ```
@@ -55,7 +55,7 @@ For this feature, use H100 or A100 GPUs instead.
 2. Enable image captioning
    Export the below environment variable and relaunch the ingestor-server container.
    ```bash
-   export APP_NVINGEST_EXTRACTIMAGES="true"
+   export APP_NVINGEST_EXTRACTIMAGES="True"
    docker compose -f deploy/compose/docker-compose-ingestor-server.yaml up -d
    ```
 
@@ -76,7 +76,7 @@ To enable image captioning in Helm-based deployments by using an on-prem VLM mod
 1. In the `values.yaml` file, in the `ingestor-server.envVars` section, set the following environment variables.
 
    ```yaml
-   APP_NVINGEST_EXTRACTIMAGES: "true"
+   APP_NVINGEST_EXTRACTIMAGES: "True"
    APP_NVINGEST_CAPTIONENDPOINTURL: "http://nim-vlm:8000/v1/chat/completions"
    APP_NVINGEST_CAPTIONMODELNAME: "nvidia/llama-3.1-nemotron-nano-vl-8b-v1"
    ```
@@ -91,6 +91,7 @@ To enable image captioning in Helm-based deployments by using an on-prem VLM mod
 3. Apply the updated Helm chart by running the following code.
 
    ```bash
+   helm upgrade --install rag -n rag https://helm.ngc.nvidia.com/nvidia/blueprint/charts/nvidia-blueprint-rag-v2.3.2.tgz \
    --username '$oauthtoken' \
    --password "${NGC_API_KEY}" \
    --set imagePullSecret.password=$NGC_API_KEY \

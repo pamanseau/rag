@@ -93,15 +93,16 @@ Additionally, ensure that **table extraction**, **chart extraction**, and **imag
 
    In the `nv-ingest.envVars` section, set the following values:
    ```yaml
-   APP_NVINGEST_EXTRACTTEXT: "true"
-   APP_NVINGEST_EXTRACTINFOGRAPHICS: "false"
-   APP_NVINGEST_EXTRACTTABLES: "false"
-   APP_NVINGEST_EXTRACTCHARTS: "false"
+   APP_NVINGEST_EXTRACTTEXT: "True"
+   APP_NVINGEST_EXTRACTINFOGRAPHICS: "False"
+   APP_NVINGEST_EXTRACTTABLES: "False"
+   APP_NVINGEST_EXTRACTCHARTS: "False"
    ```
 
 2. Then use the modified `values.yaml` file in your Helm upgrade command:
 
 ```bash
+helm upgrade --install rag -n rag https://helm.ngc.nvidia.com/nvidia/blueprint/charts/nvidia-blueprint-rag-v2.3.2.tgz \
   --username '$oauthtoken' \
   --password "${NGC_API_KEY}" \
   --values deploy/helm/nvidia-blueprint-rag/values.yaml \

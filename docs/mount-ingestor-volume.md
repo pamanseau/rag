@@ -1,3 +1,10 @@
+<!--
+  SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+  SPDX-License-Identifier: Apache-2.0
+-->
+# Ingestor Server Volume Mounting for NVIDIA RAG Blueprint
+
+You can mount a host directory to access NV-Ingest extraction results directly from the filesystem when you use the [NVIDIA RAG Blueprint](readme.md). Designed for advanced developers who need programmatic access to raw extraction results for custom processing pipelines or external vector database integration.
 
 ## Configuration
 
@@ -15,6 +22,10 @@
    ```bash
    # Enable disk persistence
    export APP_NVINGEST_SAVETODISK=True
+
+   # Set host directory path (optional - customize as needed)
+   export INGESTOR_SERVER_EXTERNAL_VOLUME_MOUNT=./volumes/ingestor-server
+
    # Set container internal path (optional - customize as needed)
    export INGESTOR_SERVER_DATA_DIR=/data/
    ```
@@ -63,12 +74,13 @@ The Helm chart supports persisting ingestor-server data to a PersistentVolumeCla
 
 ### Values
 
+Edit [`values.yaml`](../deploy/helm/nvidia-blueprint-rag/values.yaml) and set:
 
 ```yaml
 ingestor-server:
   envVars:
     # Ensure results are written to disk inside the pod
-    APP_NVINGEST_SAVETODISK: "true"
+    APP_NVINGEST_SAVETODISK: "True"
     # Directory inside the container where results will be written
     INGESTOR_SERVER_DATA_DIR: "/data/"
 
@@ -103,6 +115,7 @@ Using a custom values file:
 
 ```bash
 helm upgrade --install rag -n rag \
+  https://helm.ngc.nvidia.com/nvidia/blueprint/charts/nvidia-blueprint-rag-v2.3.2.tgz \
   --username '$oauthtoken' \
   --password "${NGC_API_KEY}" \
   --set imagePullSecret.password=$NGC_API_KEY \
@@ -114,6 +127,7 @@ Or with inline overrides:
 
 ```bash
 helm upgrade --install rag -n rag \
+  https://helm.ngc.nvidia.com/nvidia/blueprint/charts/nvidia-blueprint-rag-v2.3.2.tgz \
   --username '$oauthtoken' \
   --password "${NGC_API_KEY}" \
   --set imagePullSecret.password=$NGC_API_KEY \
@@ -132,6 +146,7 @@ List results inside the ingestor-server pod (default mount path `/data/`):
 kubectl -n rag exec -it <ingestor-pod> -- ls -l /data/
 ```
 
+Copy data from the pod to your local computer:
 
 ```bash
 kubectl -n rag cp <ingestor-pod>:/data/ ./ingestor-data
