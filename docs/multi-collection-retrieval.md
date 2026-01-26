@@ -50,8 +50,8 @@ The reranker settings are configured in `deploy/helm/nvidia-blueprint-rag/values
 
 ```yaml
 envVars:
-  # Enable reranker (default: "True")
-  ENABLE_RERANKER: "True"
+  # Enable reranker (default: "true")
+  ENABLE_RERANKER: "true"
   
   # Reranker model name (default is already configured)
   APP_RANKING_MODELNAME: "nvidia/llama-3.2-nv-rerankqa-1b-v2"

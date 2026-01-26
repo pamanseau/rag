@@ -37,8 +37,8 @@ ngcApiSecret:
 
 # -- RAG server container image
 image:
-  repository: pamanseau/rag-server
-  tag: "2.3.0.rc2.2"
+  repository: nvcr.io/nvidia/blueprint/rag-server
+  tag: "2.3.0"
   pullPolicy: Always
 
 # -- RAG server service configuration
@@ -190,7 +190,7 @@ envVars:
 
   # === Reflection ===
   # enable reflection (context relevance and response groundedness checking) in the rag chain
-  ENABLE_REFLECTION: "False"
+  ENABLE_REFLECTION: "false"
   # Maximum number of context relevance loop iterations
   MAX_REFLECTION_LOOP: "3"
   # Minimum relevance score threshold (0-2)
@@ -237,8 +237,8 @@ ingestor-server:
     password: ""
 
   image:
-    repository: pamanseau/ingestor-server
-    tag: "2.3.0.rc2.2"
+    repository: nvcr.io/nvidia/blueprint/ingestor-server
+    tag: "2.3.0"
     pullPolicy: Always
 
   # -- Service config for ingestor-server
@@ -365,9 +365,9 @@ frontend:
   replicaCount: 1
 
   image:
-    repository: pamanseau/rag-frontend
+    repository: nvcr.io/nvidia/blueprint/rag-frontend
     pullPolicy: IfNotPresent
-    tag: "2.3.0.rc2.2"
+    tag: "2.3.0"
 
   imagePullSecret:
     name: "ngc-secret"
@@ -413,6 +413,22 @@ elasticsearch:
     replicaCount: 0
   ingest:
     enabled: false
+  global:
+    security:
+      allowInsecureImages: true
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/elasticsearch
+    tag: 9.0.3-debian-12-r1
+  volumePermissions:
+    image:
+      registry: docker.io
+      repository: bitnamilegacy/os-shell
+      tag: 12-debian-12-r48
+  sysctlImage:
+    registry: docker.io
+    repository: bitnamilegacy/os-shell
+    tag: 12-debian-12-r48
 
 # -- Observability
 # subsection: serviceMonitor
@@ -519,6 +535,14 @@ kube-prometheus-stack:
     prometheusSpec:
       scrapeInterval: "1s"
       evaluationInterval: "1s"
+      additionalScrapeConfigs:
+        - job_name: rag-app
+          scrape_interval: 5s
+          metrics_path: /metrics
+          static_configs:
+            - targets:
+                # If the app is in another namespace, use rag-server.<namespace>.svc:8081
+                - rag-server:8081
   grafana:
     adminUser: admin
     adminPassword: "admin"
@@ -533,23 +557,15 @@ nim-llm:
   image:
     repository: nvcr.io/nim/nvidia/llama-3.3-nemotron-super-49b-v1.5
     pullPolicy: IfNotPresent
-    tag: "1.12.0"
+    tag: "1.13.1"
   resources:
     limits:
       nvidia.com/gpu: 1
     requests:
       nvidia.com/gpu: 1
-  # H100 tp 1 profile non-NVL based
-  # env:
-  # - name: NIM_MODEL_PROFILE
-  #   value: "tensorrt_llm-h100-fp8-tp1-pp1-throughput-2330:10de-ed15592b3e4d174a719e8188493420073c39448d9b7ed742cfe614b96fecbdd9-1"
-  # NVL based H100 tp 1 profile
-  # env:
-  #   - name: NIM_MODEL_PROFILE
-  #     value: "tensorrt_llm-h100_nvl-fp8-tp1-pp1-throughput-2321:10de-6343e21ba5cccf783d18951c6627c207b81803c3c45f1e8b59eee062ed350143-1"
   env:
     - name: NIM_MODEL_PROFILE
-      value: ""
+      value: "" # Provide correct profile name here
   model:
     ngcAPIKey: ""
     name: "nvidia/llama-3.3-nemotron-super-49b-v1.5"
@@ -635,21 +651,21 @@ nv-ingest:
   ngcImagePullSecret:
     create: false
   image:
-    repository: nvcr.io/nvidia/nemo-microservices/nv-ingest
-    tag: 25.9.0
+    repository: "nvcr.io/nvidia/nemo-microservices/nv-ingest"
+    tag: "25.9.0"
   resources:
     limits:
       nvidia.com/gpu: 0
   envVars:
     ARROW_DEFAULT_MEMORY_POOL: "system"
-    INGEST_LOG_LEVEL: DEFAULT
+    INGEST_LOG_LEVEL: WARNING
     INGEST_RAY_LOG_LEVEL: "PRODUCTION"
     NV_INGEST_MAX_UTIL: 48
     INGEST_EDGE_BUFFER_SIZE: 64
-    INGEST_DYNAMIC_MEMORY_THRESHOLD: "0.80"
+    INGEST_DYNAMIC_MEMORY_THRESHOLD: "0.8"
     INGEST_DISABLE_DYNAMIC_SCALING: "false"
     MRC_IGNORE_NUMA_CHECK: 1
-    READY_CHECK_ALL_COMPONENTS: "true"
+    READY_CHECK_ALL_COMPONENTS: "False"
     COMPONENTS_TO_READY_CHECK: "ALL"
     REDIS_MORPHEUS_TASK_QUEUE: morpheus_task_queue
     REDIS_INGEST_TASK_QUEUE: "ingest_task_queue"
@@ -669,13 +685,13 @@ nv-ingest:
     INSTALL_AUDIO_EXTRACTION_DEPS: "true"
 
     # Paddle OCR endpoints
-    PADDLE_GRPC_ENDPOINT: nemoretriever-ocr-v1.nemo:8001
-    PADDLE_HTTP_ENDPOINT: http://nemoretriever-ocr-v1.nemo:8000/v1/infer
+    PADDLE_GRPC_ENDPOINT: nemoretriever-ocr.nemo:8001
+    PADDLE_HTTP_ENDPOINT: http://nemoretriever-ocr.nemo:8000/v1/infer
     PADDLE_INFER_PROTOCOL: grpc
 
     # OCR routing (defaults to Paddle OCR service)
-    OCR_GRPC_ENDPOINT: nemoretriever-ocr-v1.nemo:8001
-    OCR_HTTP_ENDPOINT: http://nemoretriever-ocr-v1.nemo:8000/v1/infer
+    OCR_GRPC_ENDPOINT: nemoretriever-ocr.nemo:8001
+    OCR_HTTP_ENDPOINT: http://nemoretriever-ocr.nemo:8000/v1/infer
     OCR_INFER_PROTOCOL: grpc
     OCR_MODEL_NAME: nemoretriever-ocr-v1
 
@@ -697,6 +713,7 @@ nv-ingest:
 
     # Captioning
     VLM_CAPTION_MODEL_NAME: nvidia/llama-3.1-nemotron-nano-vl-8b-v1
+    VLM_CAPTION_ENDPOINT: http://nim-vlm.nemo:8000/v1/chat/completions
 
     # Audio service
     AUDIO_GRPC_ENDPOINT: nv-ingest-riva-nim:50051
@@ -708,12 +725,19 @@ nv-ingest:
     image:
       all:
         repository: milvusdb/milvus
-        tag: v2.5.3-gpu
+        tag: v2.5.17-gpu
+    etcd:
+      image:
+        repository: "milvusdb/etcd"
+        tag: "3.5.22-r1"
     standalone:
       resources:
         limits:
           nvidia.com/gpu: 1
     minio:
+      image:
+        repository: minio/minio
+        tag: "RELEASE.2025-09-07T16-13-09Z"
       accessKey: minioadmin
       secretKey: minioadmin
       bucketName: nv-ingest
@@ -742,7 +766,7 @@ nv-ingest:
     replicaCount: 1
     image:
       repository: nvcr.io/nim/baidu/paddleocr
-      tag: "1.4.0"
+      tag: "1.5.0"
     imagePullSecrets:
       - name: ngc-secret
     env:
@@ -773,6 +797,25 @@ nv-ingest:
       tag: "1.1.0"
     imagePullSecrets:
       - name: ngc-secret
+    env:
+      - name: NIM_HTTP_API_PORT
+        value: "8000"
+      - name: NIM_TRITON_LOG_VERBOSE
+        value: "1"
+      - name: NIM_TRITON_RATE_LIMIT
+        value: "1"
+      - name: CUDA_VISIBLE_DEVICES
+        value: "0"
+      - name: NIM_TRITON_MAX_BATCH_SIZE
+        value: "32"
+      - name: NIM_TRITON_CUDA_MEMORY_POOL_MB
+        value: "2048"
+      - name: NIM_TRITON_CPU_THREADS_PRE_PROCESSOR
+        value: "2"
+      - name: NIM_TRITON_CPU_THREADS_POST_PROCESSOR
+        value: "1"
+      - name: OMP_NUM_THREADS
+        value: "1"
     resources:
       limits:
         nvidia.com/gpu: 1
@@ -880,3 +923,9 @@ nv-ingest:
         nvidia.com/gpu: 1
       requests:
         nvidia.com/gpu: 1
+  # NIM VLM Text Extraction
+  nim-vlm-text-extraction:
+    deployed: false
+    image:
+      repository: nvcr.io/nim/nvidia/nemoretriever-parse
+      tag: "1.2"
